@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma Centralizada - Gimnasio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #8a63d2;
+            --main-accent: #7a52c7;
+            --bg-color: #f7f5fa;
+            --text-color: #2c2c2c;
+            --card-bg: #ffffff;
+        }
+        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
+        
+        .sidebar { width: 270px; background: linear-gradient(135deg, #9b72ee 0%, #7a52c7 100%); color: white; display: flex; flex-direction: column; padding: 25px 15px; box-shadow: 4px 0 15px rgba(0,0,0,0.08); }
+        .sidebar h1 { font-size: 24px; text-align: center; margin-bottom: 35px; font-weight: 700; letter-spacing: 0.5px; }
+        
+        .nav-btn { background: transparent; border: none; color: rgba(255,255,255,0.85); padding: 13px 18px; text-align: left; font-size: 14px; cursor: pointer; border-radius: 8px; margin-bottom: 10px; font-weight: 500; transition: all 0.3s ease; font-family: 'Poppins', sans-serif; }
+        .nav-btn:hover, .nav-btn.active { background-color: rgba(255, 255, 255, 0.2); color: white; font-weight: 600; transform: translateX(4px); }
+
+        .main-content { flex: 1; padding: 35px; overflow-y: auto; background-color: var(--card-bg); }
+        .header-title { font-size: 28px; color: var(--main-accent); margin-bottom: 25px; font-weight: 700; border-bottom: 2px solid #ede7f6; padding-bottom: 12px; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #555; }
+        input, select { width: 100%; padding: 10px 12px; box-sizing: border-box; border: 1px solid #dcd6f7; border-radius: 8px; font-size: 14px; font-family: 'Poppins', sans-serif; background-color: #faf9fd; }
+        input:focus, select:focus { border-color: var(--main-accent); outline: none; background-color: #fff; }
+        
+        .checkbox-group { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 8px; }
+        .checkbox-group label { font-weight: 400; cursor: pointer; color: #444; }
+
+        .btn-submit { background: linear-gradient(135deg, #9b72ee 0%, #7a52c7 100%); color: white; border: none; padding: 12px; cursor: pointer; border-radius: 8px; width: 100%; font-weight: 600; font-size: 14px; font-family: 'Poppins', sans-serif; transition: all 0.2s; }
+        .btn-submit:hover { opacity: 0.92; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; border-radius: 8px; overflow: hidden; }
+        th, td { border: 1px solid #ede7f6; padding: 11px; text-align: left; }
+        th { background-color: #f3effc; color: var(--main-accent); font-weight: 600; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .card { background: #faf8fc; padding: 15px; border: 1px solid #e8e1f5; border-radius: 10px; margin-bottom: 12px; display: none; }
+        .card.active-edit { display: block; }
+    </style>
+    <script>
+        function cambiarPestaña(evt, nombrePestaña) {
+            let contenidos = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < contenidos.length; i++) { contenidos[i].classList.remove("active"); }
+            let botones = document.getElementsByClassName("nav-btn");
+            for (let i = 0; i < botones.length; i++) { botones[i].classList.remove("active"); }
+            
+            document.getElementById(nombrePestaña).classList.add("active");
+            evt.currentTarget.classList.add("active");
+            localStorage.setItem('pestanaActiva', nombrePestaña);
+        }
+
+        function toggleEdicion(id) {
+            let card = document.getElementById('edit-card-' + id);
+            if (card.classList.contains('active-edit')) {
+                card.classList.remove('active-edit');
+            } else {
+                card.classList.add('active-edit');
+            }
+        }
+
+        window.onload = function() {
+            let pestanaGuardada = localStorage.getItem('pestanaActiva');
+            if (pestanaGuardada) {
+                let btn = document.querySelector(`[onclick*="${pestanaGuardada}"]`);
+                if (btn) { btn.click(); }
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h1>Gimnasio Central</h1>
+        <button class="nav-btn active" onclick="cambiarPestaña(event, 'tab-clientes')">Registro Clientes</button>
+        <button class="nav-btn" onclick="cambiarPestaña(event, 'tab-directorio')">Directorio y Expedientes</button>
+        <button class="nav-btn" onclick="cambiarPestaña(event, 'tab-membresias')">Membresías</button>
+        <button class="nav-btn" onclick="cambiarPestaña(event, 'tab-pagos')">Pagos y Saldos</button>
+        <button class="nav-btn" onclick="cambiarPestaña(event, 'tab-clases')">Clases</button>
+        <button class="nav-btn" onclick="cambiarPestaña(event, 'tab-reservas')">Reservas y Asistencia</button>
+    </div>
+
+    <div class="main-content">
+
+        <!-- Pestaña 1: Registro -->
+        <div id="tab-clientes" class="tab-content active">
+            <div class="header-title">Registro de Nuevo Cliente</div>
+            <form action="/registrar-cliente" method="POST" style="max-width: 500px;">
+                <div class="form-group"><label>Nombre:</label><input type="text" name="nombre" required></div>
+                <div class="form-group"><label>Apellido:</label><input type="text" name="apellido" required></div>
+                <div class="form-group"><label>Correo Electrónico:</label><input type="email" name="correo" required></div>
+                <div class="form-group"><label>Teléfono:</label><input type="text" name="telefono" required></div>
+                <button type="submit" class="btn-submit">Guardar Cliente</button>
+            </form>
+        </div>
+
+        <!-- Pestaña 2: Directorio Reducido con Botón Editar -->
+        <div id="tab-directorio" class="tab-content">
+            <div class="header-title">Directorio de Clientes</div>
+            <p style="font-size: 13px; color: #666;">Visualiza los clientes registrados de forma compacta y haz clic en "Editar" para modificar sus datos o estado.</p>
+            
+            <table>
+                <tr><th>ID</th><th>Nombre Completo</th><th>Correo</th><th>Estado</th><th>Acción</th></tr>
+                {% for c in clientes %}
+                <tr>
+                    <td>{{ c.id_cliente }}</td>
+                    <td>{{ c.nombre }} {{ c.apellido }}</td>
+                    <td>{{ c.correo }}</td>
+                    <td><b>{{ c.estado }}</b></td>
+                    <td><button type="button" onclick="toggleEdicion('{{ c.id_cliente }}')" style="background: var(--main-accent); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Editar</button></td>
+                </tr>
+                {% endfor %}
+            </table>
+
+            <h3 style="margin-top: 30px;">Edición de Expedientes</h3>
+            {% for c in clientes %}
+            <div id="edit-card-{{ c.id_cliente }}" class="card">
+                <form action="/actualizar-cliente/{{ c.id_cliente }}" method="POST">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <b style="color: var(--main-accent);">Editando ID: {{ c.id_cliente }}</b>
+                        <select name="estado" style="width: 130px; padding: 4px;">
+                            <option value="Activo" {% if c.estado == 'Activo' %}selected{% endif %}>Activo</option>
+                            <option value="Inactivo" {% if c.estado == 'Inactivo' %}selected{% endif %}>Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group"><label>Nombre:</label><input type="text" name="nombre" value="{{ c.nombre }}" required></div>
+                        <div class="form-group"><label>Apellido:</label><input type="text" name="apellido" value="{{ c.apellido }}" required></div>
+                        <div class="form-group"><label>Correo:</label><input type="email" name="correo" value="{{ c.correo }}" required></div>
+                        <div class="form-group"><label>Teléfono:</label><input type="text" name="telefono" value="{{ c.telefono }}" required></div>
+                    </div>
+                    <button type="submit" style="background-color: var(--main-accent); color: white; border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Guardar Cambios</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pestaña 3: Membresías -->
+        <div id="tab-membresias" class="tab-content">
+            <div class="header-title">Gestión y Asignación de Planes</div>
+            <form action="/asignar-membresia" method="POST" style="max-width: 480px; margin-bottom: 30px;">
+                <div class="form-group"><label>ID de Cliente:</label><input type="number" name="id_cliente" required></div>
+                <div class="form-group">
+                    <label>Seleccionar Plan de Membresía:</label>
+                    <select name="id_plan" required>
+                        {% for p in planes %}
+                        <option value="{{ p.id_plan }}">{{ p.nombre_plan }} - ${{ "{:,.0f}".format(p.precio) }} ({{ p.duracion_dias }} días) | Beneficios: {{ p.beneficios }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit">Asignar Plan</button>
+            </form>
+            
+            <h4>Membresías Activas e Historial:</h4>
+            <table>
+                <tr><th>ID Membresía</th><th>ID Cliente</th><th>Plan</th><th>Fecha Inicio</th><th>Vencimiento</th><th>Estado</th></tr>
+                {% for m in membresias %}
+                <tr>
+                    <td>{{ m.id_membresia }}</td>
+                    <td>{{ m.id_cliente }}</td>
+                    <td>{{ m.plan.nombre_plan }}</td>
+                    <td>{{ m.fecha_inicio.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ m.fecha_fin.strftime('%Y-%m-%d') }}</td>
+                    <td><b>{{ m.estado }}</b></td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <!-- Pestaña 4: Pagos -->
+        <div id="tab-pagos" class="tab-content">
+            <div class="header-title">Registro de Pagos y Saldos</div>
+            <div class="grid-2">
+                <form action="/registrar-pago" method="POST">
+                    <div class="form-group"><label>ID de Cliente:</label><input type="number" name="id_cliente" required></div>
+                    <div class="form-group"><label>Monto a Abonar ($):</label><input type="number" step="1000" name="monto" required></div>
+                    <div class="form-group"><label>Método de Pago:</label>
+                        <select name="metodo"><option value="Efectivo">Efectivo</option><option value="Tarjeta">Tarjeta</option><option value="Transferencia">Transferencia</option></select>
+                    </div>
+                    <button type="submit" class="btn-submit">Registrar Abono</button>
+                </form>
+                <div>
+                    <h4>Historial de Transacciones y Saldos:</h4>
+                    <table>
+                        <tr><th>ID</th><th>Cliente</th><th>Monto</th><th>Estado / Saldo</th></tr>
+                        {% for p in pagos %}
+                        <tr>
+                            <td>{{ p.id_pago }}</td>
+                            <td>ID: {{ p.id_cliente }}</td>
+                            <td>${{ "{:,.0f}".format(p.monto) }}</td>
+                            <td><span style="color: {% if 'Pendiente' in p.estado %}#e67e22{% else %}#27ae60{% endif %};"><b>{{ p.estado }}</b></span></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña 5: Clases -->
+        <div id="tab-clases" class="tab-content">
+            <div class="header-title">Programación de Clases Grupales</div>
+            <div class="grid-2">
+                <form action="/programar-clase" method="POST">
+                    <div class="form-group"><label>Nombre de la Clase:</label><input type="text" name="nombre_clase" required></div>
+                    <div class="form-group"><label>Instructor:</label><input type="text" name="instructor" required></div>
+                    
+                    <div class="form-group">
+                        <label>Seleccionar Días (Múltiples opciones):</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="dias" value="Lunes"> Lunes</label>
+                            <label><input type="checkbox" name="dias" value="Martes"> Martes</label>
+                            <label><input type="checkbox" name="dias" value="Miércoles"> Miércoles</label>
+                            <label><input type="checkbox" name="dias" value="Jueves"> Jueves</label>
+                            <label><input type="checkbox" name="dias" value="Viernes"> Viernes</label>
+                            <label><input type="checkbox" name="dias" value="Sábado"> Sábado</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group"><label>Hora de la Sesión:</label><input type="time" name="hora" required></div>
+                    <div class="form-group"><label>Capacidad Máxima (Cupos):</label><input type="number" name="capacidad" required value="10"></div>
+                    <button type="submit" class="btn-submit">Programar Clase</button>
+                </form>
+
+                <div>
+                    <h4>Clases Programadas:</h4>
+                    <table>
+                        <tr><th>ID</th><th>Clase</th><th>Instructor</th><th>Horario / Días</th><th>Cupo</th></tr>
+                        {% for cl in clases %}
+                        <tr><td>{{ cl.id_clase }}</td><td>{{ cl.nombre_clase }}</td><td>{{ cl.instructor }}</td><td>{{ cl.horario }}</td><td>{{ cl.capacidad_maxima }}</td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña 6: Reservas y Asistencia (Corregida y funcional) -->
+        <div id="tab-reservas" class="tab-content">
+            <div class="header-title">Gestión de Reservas, Cancelaciones y Asistencia</div>
+            <div class="grid-2">
+                <div>
+                    <h4>Reservar Cupo</h4>
+                    <form action="/reservar-clase" method="POST" style="margin-bottom: 25px;">
+                        <div class="form-group"><label>ID de Cliente:</label><input type="number" name="id_cliente" required></div>
+                        <div class="form-group"><label>Seleccionar Clase:</label>
+                            <select name="id_clase">
+                                {% for cl in clases %}
+                                <option value="{{ cl.id_clase }}">{{ cl.id_clase }} - {{ cl.nombre_clase }} ({{ cl.horario }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit">Confirmar Reserva</button>
+                    </form>
+
+                    <h4>Registrar Asistencia</h4>
+                    <form action="/registrar-asistencia" method="POST">
+                        <div class="form-group"><label>ID de Cliente:</label><input type="number" name="id_cliente" required></div>
+                        <div class="form-group"><label>Seleccionar Clase:</label>
+                            <select name="id_clase">
+                                {% for cl in clases %}
+                                <option value="{{ cl.id_clase }}">{{ cl.id_clase }} - {{ cl.nombre_clase }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);">Marcar Asistencia</button>
+                    </form>
+                </div>
+
+                <div>
+                    <h4>Reservas Activas:</h4>
+                    <table>
+                        <tr><th>Reserva</th><th>Cliente</th><th>Clase</th><th>Acción</th></tr>
+                        {% for r in reservas %}
+                        <tr>
+                            <td>#{{ r.id_reserva }}</td>
+                            <td>{{ r.cliente.nombre }}</td>
+                            <td>{{ r.clase.nombre_clase }}</td>
+                            <td>
+                                <form action="/cancelar-reserva/{{ r.id_reserva }}" method="POST">
+                                    <button type="submit" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: 600;">Cancelar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+
+                    <h4 style="margin-top: 25px;">Asistencias Registradas:</h4>
+                    <table>
+                        <tr><th>Cliente</th><th>Clase</th><th>Fecha/Hora</th></tr>
+                        {% for a in asistencias %}
+                        <tr>
+                            <td>{{ a.cliente.nombre }}</td>
+                            <td>{{ a.clase.nombre_clase }}</td>
+                            <td>{{ a.fecha_registro.strftime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
