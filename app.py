@@ -45,8 +45,8 @@ def registrar_cliente_web():
     controller.registrar_cliente_controller(
         id_cliente=id_asignado, nombre=nombre, apellido=apellido, correo=correo, telefono=telefono
     )
-    # Redirige directo al directorio para ver al cliente registrado sin pantallas intermedias
-    return redirect(url_for('home'))
+    # Redirigimos a la misma pestaña pasando el ID asignado por parámetro URL
+    return redirect(url_for('home', id_creado=id_asignado, nombre_creado=nombre))
 
 # Actualizar información o estado del cliente
 @app.route('/actualizar-cliente/<int:id_cliente>', methods=['POST'])
@@ -73,12 +73,12 @@ def asignar_membresia_web():
     cliente = repo.buscar_cliente(id_cliente)
     plan_seleccionado = next((p for p in planes_disponibles if p.id_plan == id_plan), None)
     
-    if not cliente or not plan_seleccionado:
-        return retornar_respuesta(False, "Error: Cliente o Plan de Membresía no válido.", "")
-    
-    nueva_membresia = Membresia(id_membresia=len(repo.membresias)+1, id_cliente=id_cliente, plan=plan_seleccionado)
-    repo.membresias.append(nueva_membresia)
-    return retornar_respuesta(True, f"Membresía asignada con éxito.", f"Plan: {plan_seleccionado.nombre_plan} | Vence: {nueva_membresia.fecha_fin.strftime('%Y-%m-%d')}")
+    if cliente and plan_seleccionado:
+        nueva_membresia = Membresia(id_membresia=len(repo.membresias)+1, id_cliente=id_cliente, plan=plan_seleccionado)
+        repo.membresias.append(nueva_membresia)
+        
+    # Redirige de vuelta a la pestaña de membresías sin cuadros molestos
+    return redirect(url_for('home'))
 
 # Gestión de Pagos con cálculo de saldo pendiente
 @app.route('/registrar-pago', methods=['POST'])

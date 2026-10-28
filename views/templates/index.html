@@ -45,6 +45,8 @@
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
         .card { background: #faf8fc; padding: 15px; border: 1px solid #e8e1f5; border-radius: 10px; margin-bottom: 12px; display: none; }
         .card.active-edit { display: block; }
+        
+        .alert-success { background-color: #e8f8f5; border: 1px solid #a3e4d7; color: #117a65; padding: 12px 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; font-weight: 500; }
     </style>
     <script>
         function cambiarPestaña(evt, nombrePestaña) {
@@ -60,11 +62,7 @@
 
         function toggleEdicion(id) {
             let card = document.getElementById('edit-card-' + id);
-            if (card.classList.contains('active-edit')) {
-                card.classList.remove('active-edit');
-            } else {
-                card.classList.add('active-edit');
-            }
+            card.classList.toggle('active-edit');
         }
 
         window.onload = function() {
@@ -93,6 +91,15 @@
         <!-- Pestaña 1: Registro -->
         <div id="tab-clientes" class="tab-content active">
             <div class="header-title">Registro de Nuevo Cliente</div>
+            
+            {% set id_creado = request.args.get('id_creado') %}
+            {% set nombre_creado = request.args.get('nombre_creado') %}
+            {% if id_creado %}
+            <div class="alert-success">
+                ✨ ¡Cliente registrado con éxito! Su <b>ID asignado es: {{ id_creado }}</b> (Guárdalo para asignarle membresías o reservas).
+            </div>
+            {% endif %}
+
             <form action="/registrar-cliente" method="POST" style="max-width: 500px;">
                 <div class="form-group"><label>Nombre:</label><input type="text" name="nombre" required></div>
                 <div class="form-group"><label>Apellido:</label><input type="text" name="apellido" required></div>
@@ -102,7 +109,7 @@
             </form>
         </div>
 
-        <!-- Pestaña 2: Directorio Reducido con Botón Editar -->
+        <!-- Pestaña 2: Directorio -->
         <div id="tab-directorio" class="tab-content">
             <div class="header-title">Directorio de Clientes</div>
             <p style="font-size: 13px; color: #666;">Visualiza los clientes registrados de forma compacta y haz clic en "Editar" para modificar sus datos o estado.</p>
@@ -241,7 +248,7 @@
             </div>
         </div>
 
-        <!-- Pestaña 6: Reservas y Asistencia (Corregida y funcional) -->
+        <!-- Pestaña 6: Reservas y Asistencia -->
         <div id="tab-reservas" class="tab-content">
             <div class="header-title">Gestión de Reservas, Cancelaciones y Asistencia</div>
             <div class="grid-2">
